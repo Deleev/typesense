@@ -3,6 +3,17 @@
 #include <store.h>
 #include <string_utils.h>
 
+TEST(StoreDeathTest, OpenFailureIsFatal) {
+    // a regular file cannot contain the DB directory, so the open below deterministically fails
+    std::string parent_file_path = "/tmp/typesense_test/store_open_failure_test/not_a_dir";
+    system(("rm -rf /tmp/typesense_test/store_open_failure_test && mkdir -p /tmp/typesense_test/store_open_failure_test && touch " + parent_file_path).c_str());
+
+    // must abort startup instead of leaving a null DB handle that would segfault on first use
+    EXPECT_DEATH({
+        Store store(parent_file_path + "/db");
+    }, "Unable to open the underlying database at directory");
+}
+
 TEST(StoreTest, GetUpdatesSince) {
     std::string primary_store_path = "/tmp/typesense_test/primary_store_test";
     LOG(INFO) << "Truncating and creating: " << primary_store_path;
