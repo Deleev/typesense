@@ -20,7 +20,9 @@ CMAKE_CACHE_ENTRIES = {
     "CURL_USE_LIBPSL": "OFF",
     "USE_LIBIDN2": "OFF",
     "CURL_BROTLI": "OFF",
-    "CURL_ZSTD": "OFF"
+    "CURL_ZSTD": "OFF",
+    # Fedora sets CMAKE_INSTALL_LIBDIR=lib64; rules_foreign_cc expects lib/. No-op elsewhere.
+    "CMAKE_INSTALL_LIBDIR": "lib"
 }
 
 CMAKE_MACOS_CACHE_ENTRIES = dict(CMAKE_CACHE_ENTRIES.items() + {}.items())

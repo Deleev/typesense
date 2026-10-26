@@ -315,6 +315,8 @@ http_archive(
     build_file = "//bazel:elfutils.BUILD",
     sha256 = "df76db71366d1d708365fc7a6c60ca48398f14367eb2b8954efc8897147ad871",
     strip_prefix = "elfutils-0.191",
+    patches = ["//bazel:elfutils.patch"],
+    patch_args = ["-p0"],
         urls = ["https://dl.typesense.org/deps/elfutils-0.191.tar.bz2"],
 )
 

@@ -15,3 +15,14 @@ run --define=BRPC_WITH_GLOG=true
 build --enable_platform_specific_config
 
 build:linux --action_env=BAZEL_LINKLIBS="-l%:libstdc++.a -l%:libgcc.a"
+
+# Flags for building with modern GCC (>=13). Not needed on the stock GCC 10/12 toolchains.
+# GCC 13 dropped libstdc++'s transitive <cstdint>; force-include it for all C++ deps.
+build:modern-gcc --cxxopt=-include --cxxopt=cstdint
+# GCC 15 defaults C to gnu23, where () means (void) and breaks old C deps.
+build:modern-gcc --conlyopt=-std=gnu17
+# GCC 14 made these diagnostics hard errors by default; demote them (deps ship old C).
+build:modern-gcc --copt=-Wno-error=implicit-function-declaration
+build:modern-gcc --copt=-Wno-error=incompatible-pointer-types
+# GCC 15 new warning, promoted to error by elfutils' own -Werror.
+build:modern-gcc --copt=-Wno-error=unterminated-string-initialization
