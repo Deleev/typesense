@@ -1,0 +1,83 @@
+diff --git a/3rdparty/libjpeg-turbo/CMakeLists.txt b/3rdparty/libjpeg-turbo/CMakeLists.txt
+index 3c7f29b08e..066ea4e545 100644
+--- a/3rdparty/libjpeg-turbo/CMakeLists.txt
++++ b/3rdparty/libjpeg-turbo/CMakeLists.txt
+@@ -67,7 +67,7 @@ set(JPEG_LIB_VERSION "${VERSION}-${JPEG_LIB_VERSION}" PARENT_SCOPE)
+ set(THREAD_LOCAL "")  # WITH_TURBOJPEG is not used
+ 
+ if(MSVC)
+-  add_definitions(-W3 -wd4996 -wd4018)
++  add_definitions(-W3)
+ endif()
+ 
+ if(WIN32)
+diff --git a/3rdparty/zlib/CMakeLists.txt b/3rdparty/zlib/CMakeLists.txt
+index 9758861a6b..9e654ba922 100644
+--- a/3rdparty/zlib/CMakeLists.txt
++++ b/3rdparty/zlib/CMakeLists.txt
+@@ -81,7 +81,6 @@ set_target_properties(${ZLIB_LIBRARY} PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
+ 
+ ocv_warnings_disable(CMAKE_C_FLAGS -Wshorten-64-to-32 -Wattributes -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wshift-negative-value
+     -Wundef  # _LFS64_LARGEFILE is not defined
+-    /wd4267  # MSVS 2015 (x64) + zlib 1.2.11
+     -Wimplicit-fallthrough
+ )
+ 
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d95e5db163..db185453df 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -617,11 +617,6 @@ endif()
+ 
+ ocv_cmake_hook(POST_CMAKE_BUILD_OPTIONS)
+ 
+-# --- Python Support ---
+-if(NOT IOS)
+-  include(cmake/OpenCVDetectPython.cmake)
+-endif()
+-
+ include(cmake/OpenCVCompilerOptions.cmake)
+ 
+ ocv_cmake_hook(POST_COMPILER_OPTIONS)
+diff --git a/modules/core/include/opencv2/core/ocl.hpp b/modules/core/include/opencv2/core/ocl.hpp
+index 4503fa00dd..642b0508d0 100644
+--- a/modules/core/include/opencv2/core/ocl.hpp
++++ b/modules/core/include/opencv2/core/ocl.hpp
+@@ -302,21 +302,6 @@ public:
+ 
+     void release();
+ 
+-    class CV_EXPORTS UserContext {
+-    public:
+-        virtual ~UserContext();
+-    };
+-    template <typename T>
+-    inline void setUserContext(const std::shared_ptr<T>& userContext) {
+-        setUserContext(typeid(T), userContext);
+-    }
+-    template <typename T>
+-    inline std::shared_ptr<T> getUserContext() {
+-        return std::dynamic_pointer_cast<T>(getUserContext(typeid(T)));
+-    }
+-    void setUserContext(std::type_index typeId, const std::shared_ptr<UserContext>& userContext);
+-    std::shared_ptr<UserContext> getUserContext(std::type_index typeId);
+-
+     struct Impl;
+     inline Impl* getImpl() const { return (Impl*)p; }
+     inline bool empty() const { return !p; }
+diff --git a/modules/core/src/ocl_disabled.impl.hpp b/modules/core/src/ocl_disabled.impl.hpp
+index a217979a1e..0ba30d024c 100644
+--- a/modules/core/src/ocl_disabled.impl.hpp
++++ b/modules/core/src/ocl_disabled.impl.hpp
+@@ -177,11 +177,6 @@ void* Context::getOpenCLContextProperty(int /*propertyId*/) const { OCL_NOT_AVAI
+ bool Context::useSVM() const { return false; }
+ void Context::setUseSVM(bool enabled) { }
+ 
+-Context::UserContext::~UserContext() { }
+-
+-void Context::setUserContext(std::type_index /*typeId*/, const std::shared_ptr<Context::UserContext>& /*userContext*/) { OCL_NOT_AVAILABLE(); }
+-std::shared_ptr<Context::UserContext> Context::getUserContext(std::type_index /*typeId*/) { OCL_NOT_AVAILABLE(); }
+-
+ /* static */ Context Context::fromHandle(void* context) { OCL_NOT_AVAILABLE(); }
+ /* static */ Context Context::fromDevice(const ocl::Device& device) { OCL_NOT_AVAILABLE(); }
+ /* static */ Context Context::create(const std::string& configuration) { OCL_NOT_AVAILABLE(); }
