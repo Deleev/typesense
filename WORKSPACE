@@ -66,6 +66,27 @@ new_git_repository(
     patches=["//bazel:onnx_ext.patch"],
 )
 
+# opencv 4.5.4, vendored for the onnxruntime CMake build: the CLIP
+# image-processor model Typesense runs (src/image_processor.cpp) uses the
+# onnxruntime-extensions ImageDecoder custom op, which requires opencv
+# imgcodecs/imgproc/core. extensions' cmake/externals/opencv.cmake would
+# FetchContent-clone opencv from GitHub at CMake configure time; instead we
+# prefetch the release tarball here and point FetchContent at it via the
+# FETCHCONTENT_SOURCE_DIR_OPENCV cache entry (bazel/onnxruntime.BUILD).
+# opencv-no-rtti.patch is the same patch extensions applies via its (now
+# skipped) FetchContent PATCH_COMMAND. Sources are consumed as raw CMake
+# inputs, so a BUILD-file filegroup is all that is needed
+# (bazel/opencv_src.BUILD).
+http_archive(
+    name = "opencv_src",
+    build_file = "//bazel:opencv_src.BUILD",
+    sha256 = "c20bb83dd790fc69df9f105477e24267706715a9d3c705ca1e7f613c7b3bad3d",
+    strip_prefix = "opencv-4.5.4",
+    urls = ["https://github.com/opencv/opencv/archive/refs/tags/4.5.4.tar.gz"],
+    patches = ["//bazel:opencv-no-rtti.patch"],
+    patch_args = ["-p1"],
+)
+
 new_git_repository(
     name = "com_github_madler_zlib",
     build_file = "//bazel:zlib.BUILD",
@@ -315,6 +336,8 @@ http_archive(
     build_file = "//bazel:elfutils.BUILD",
     sha256 = "df76db71366d1d708365fc7a6c60ca48398f14367eb2b8954efc8897147ad871",
     strip_prefix = "elfutils-0.191",
+    patches = ["//bazel:elfutils.patch"],
+    patch_args = ["-p0"],
         urls = ["https://dl.typesense.org/deps/elfutils-0.191.tar.bz2"],
 )
 

@@ -55,7 +55,7 @@ mkdir -p $PROJECT_DIR/dist
 if [[ "$@" == *"--build-deploy-image"* ]]; then
     echo "Creating deployment image for Typesense $TYPESENSE_VERSION server ..."
     docker build --platform linux/${ARCH_NAME} --file $PROJECT_DIR/docker/deployment.Dockerfile \
-          --tag typesense/typesense:$TYPESENSE_VERSION $PROJECT_DIR/$BUILD_DIR
+          --tag deleev-typesense:$TYPESENSE_VERSION $PROJECT_DIR/$BUILD_DIR
 fi
 
 if [[ "$@" == *"--package-binary"* ]]; then

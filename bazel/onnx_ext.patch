@@ -361,3 +361,15 @@ index 6dfcd84..10565e4 100644
 -  size_t GetOutputTypeCount() const;
 -  ONNXTensorElementDataType GetOutputType(size_t index) const;
 -};
+diff --git a/operators/base64.h b/operators/base64.h
+index 121b223..31eee7c 100644
+--- operators/base64.h
++++ operators/base64.h
+@@ -2,6 +2,7 @@
+ // Licensed under the MIT License.
+ // Freely inspired from https://en.wikibooks.org/wiki/Algorithm_Implementation/Miscellaneous/Base64
+ #pragma once
++#include <cstdint>
+ #include <string>
+ #include <vector>
+ 

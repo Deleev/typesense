@@ -55,7 +55,7 @@ class Store {
 private:
 
     const std::string state_dir_path;
-    rocksdb::DB *db;
+    rocksdb::DB *db = nullptr;
     rocksdb::Options options;
     rocksdb::WriteOptions write_options;
 

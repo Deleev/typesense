@@ -55,7 +55,7 @@ if [[ "$@" == *"--build-deploy-image"* ]]; then
     echo "Creating deployment image for Typesense $TYPESENSE_VERSION server ..."
 
     cp $PROJECT_DIR/docker/deployment.Dockerfile $PROJECT_DIR/$BUILD_DIR
-    docker build --platform linux/${ARCH_NAME} --file $PROJECT_DIR/$BUILD_DIR/deployment.Dockerfile --tag typesense/typesense:$TYPESENSE_VERSION \
+    docker build --platform linux/${ARCH_NAME} --file $PROJECT_DIR/$BUILD_DIR/deployment.Dockerfile --tag deleev-typesense:$TYPESENSE_VERSION \
                         $PROJECT_DIR/$BUILD_DIR
 fi
 

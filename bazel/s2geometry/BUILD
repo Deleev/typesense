@@ -7,6 +7,8 @@ CMAKE_CACHE_ENTRIES = {
     "CMAKE_BUILD_TYPE": "Release",
     "CMAKE_USE_OPENSSL": "ON",
     "OPENSSL_ROOT_DIR": "$$EXT_BUILD_DEPS$$/openssl",
+    # Fedora sets CMAKE_INSTALL_LIBDIR=lib64; rules_foreign_cc expects lib/. No-op elsewhere.
+    "CMAKE_INSTALL_LIBDIR": "lib"
 }
 
 CMAKE_MACOS_CACHE_ENTRIES = CMAKE_CACHE_ENTRIES

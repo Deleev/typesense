@@ -22,6 +22,7 @@ CMAKE_LINUX_CACHE_ENTRIES = dict(CMAKE_CACHE_ENTRIES.items() + {
 cmake(
     name = "rocksdb",
     build_args = ["-j8"],
+    env = {"CCACHE_DISABLE": "1"},
     cache_entries = select({
         "@platforms//os:linux": CMAKE_LINUX_CACHE_ENTRIES,
         "@platforms//os:macos": CMAKE_MACOS_CACHE_ENTRIES,

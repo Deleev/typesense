@@ -1,0 +1,12 @@
+diff --git a/libcpu/riscv_disasm.c b/libcpu/riscv_disasm.c
+--- libcpu/riscv_disasm.c
++++ libcpu/riscv_disasm.c
+@@ -1256,7 +1256,7 @@
+ 		  if (rd != 0)
+ 		    op[last++] = REG (rd);
+ 		  struct known_csrs key = { csr, NULL };
+-		  struct known_csrs *found = bsearch (&key, known,
++		  const struct known_csrs *found = (const struct known_csrs *) bsearch (&key, known,
+ 						      sizeof (known) / sizeof (known[0]),
+ 						      sizeof (known[0]),
+ 						      compare_csr);

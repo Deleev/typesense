@@ -28,7 +28,15 @@ Store::Store(const std::string & state_dir_path, const size_t wal_ttl_secs, cons
     write_options.disableWAL = disable_wal;
 
     // open DB
-    init_db(ttl);
+    rocksdb::Status open_status = init_db(ttl);
+
+    // Fail fast: without a valid DB handle the process would segfault later on first use.
+    if(!open_status.ok()) {
+        LOG(FATAL) << "Unable to open the underlying database at directory: " << state_dir_path
+                   << " - RocksDB status: " << open_status.ToString()
+                   << ". Ensure that the directory exists and is writable by the Typesense process "
+                   << "(check directory permissions), and that no other Typesense server is using it.";
+    }
 }
 
 Store::~Store() {
@@ -41,7 +49,7 @@ rocksdb::Status Store::init_db(int32_t ttl) {
     rocksdb::Status s;
 
     if(ttl > 0) {
-        rocksdb::DBWithTTL* dbWithTtl;
+        rocksdb::DBWithTTL* dbWithTtl = nullptr;
         s = rocksdb::DBWithTTL::Open(options, state_dir_path,
                                      &dbWithTtl, ttl, false);
         db = dbWithTtl;
@@ -52,14 +60,14 @@ rocksdb::Status Store::init_db(int32_t ttl) {
     if(!s.ok()) {
         LOG(ERROR) << "Error while initializing store: " << s.ToString();
         if(s.code() == rocksdb::Status::Code::kIOError) {
-            LOG(ERROR) << "It seems like the data directory " << state_dir_path << " is already being used by "
-                       << "another Typesense server. ";
-            LOG(ERROR) << "If you are SURE that this is not the case, delete the LOCK file "
-                       << "in the data db directory and try again.";
+            LOG(ERROR) << "This could either mean that the data directory " << state_dir_path << " is not accessible "
+                       << "or writable by the current process (check directory permissions), or that it is "
+                       << "already being used by another Typesense server. ";
+            LOG(ERROR) << "If you are SURE that the directory is writable and not in use by another Typesense server, "
+                       << "delete the LOCK file in the data db directory and try again.";
         }
     }
 
-    assert(s.ok());
     return s;
 }
 
@@ -260,7 +268,7 @@ int Store::reload(bool clear_state_dir, const std::string& snapshot_path, int32_
         return -1;
     }
 
-    const rocksdb::Status& status = init_db(ttl);
+    rocksdb::Status status = init_db(ttl);
     if (!status.ok()) {
         LOG(WARNING) << "Open DB " << state_dir_path << " failed, msg: " << status.ToString();
         return -1;

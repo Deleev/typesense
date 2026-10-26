@@ -111,7 +111,22 @@ __ONNXRUNTIME_WITHOUT_CUDA = {'onnxruntime_RUN_ONNX_TESTS':'OFF',
 'CMAKE_BUILD_TYPE':'Release',
 'onnxruntime_USE_EXTENSIONS': 'ON',
 'onnxruntime_EXTENSIONS_PATH': '$EXT_BUILD_ROOT/external/onnx_runtime/cmake/external/onnxruntime-extensions',
-'OCOS_ENABLE_BLINGFIRE': 'OFF'
+# Keep the opencv-backed ops: the CLIP image-processor model
+# (clip_image_processor.onnx, run in src/image_processor.cpp with
+# EnableOrtCustomOps()) needs the extensions ImageDecoder op, which lives in
+# operators/cv2/imgcodecs and uses cv::imdecode. But extensions'
+# cmake/externals/opencv.cmake FetchContent-clones opencv 4.5.4 from GitHub at
+# configure time. Point FetchContent at the Bazel-vendored sources (WORKSPACE
+# @opencv_src, materialized via the `data` attr below) so no git clone runs.
+'OCOS_ENABLE_CV2': 'ON',
+'OCOS_ENABLE_VISION': 'ON',
+'OCOS_ENABLE_OPENCV_CODECS': 'ON',
+'FETCHCONTENT_SOURCE_DIR_OPENCV': '$EXT_BUILD_ROOT/external/opencv_src',
+'OCOS_ENABLE_BLINGFIRE': 'OFF',
+# onnxruntime-extensions defaults OCOS_ENABLE_DLIB=ON, which FetchContent-
+# clones dlib from GitHub at CMake configure time. This fork doesn't use
+# dlib-dependent ops and the Docker build must be hermetic/offline.
+'OCOS_ENABLE_DLIB': 'OFF',
 }
 
 
@@ -173,7 +188,22 @@ __ONNXRUNTIME_WITH_CUDA = {'onnxruntime_RUN_ONNX_TESTS':'OFF',
 'onnxruntime_CUDA_HOME': CUDA_HOME,
 'onnxruntime_CUDNN_HOME': CUDNN_HOME,
 'CMAKE_CUDA_COMPILER': CUDA_HOME + "/bin/nvcc",
-'OCOS_ENABLE_BLINGFIRE': 'OFF'
+# Keep the opencv-backed ops: the CLIP image-processor model
+# (clip_image_processor.onnx, run in src/image_processor.cpp with
+# EnableOrtCustomOps()) needs the extensions ImageDecoder op, which lives in
+# operators/cv2/imgcodecs and uses cv::imdecode. But extensions'
+# cmake/externals/opencv.cmake FetchContent-clones opencv 4.5.4 from GitHub at
+# configure time. Point FetchContent at the Bazel-vendored sources (WORKSPACE
+# @opencv_src, materialized via the `data` attr below) so no git clone runs.
+'OCOS_ENABLE_CV2': 'ON',
+'OCOS_ENABLE_VISION': 'ON',
+'OCOS_ENABLE_OPENCV_CODECS': 'ON',
+'FETCHCONTENT_SOURCE_DIR_OPENCV': '$EXT_BUILD_ROOT/external/opencv_src',
+'OCOS_ENABLE_BLINGFIRE': 'OFF',
+# onnxruntime-extensions defaults OCOS_ENABLE_DLIB=ON, which FetchContent-
+# clones dlib from GitHub at CMake configure time. This fork doesn't use
+# dlib-dependent ops and the Docker build must be hermetic/offline.
+'OCOS_ENABLE_DLIB': 'OFF',
 }
 
 config_setting(
@@ -186,6 +216,10 @@ config_setting(
 cmake(
     name = "onnxruntime",
     lib_source = "//:all_srcs",
+    # Fetches/materializes @opencv_src so its sources are visible at
+    # $EXT_BUILD_ROOT/external/opencv_src (see FETCHCONTENT_SOURCE_DIR_OPENCV
+    # in the cache entries above).
+    data = ["@opencv_src//:all_srcs"],
     cache_entries = select({
         ":with_cuda":   __ONNXRUNTIME_WITH_CUDA,
         "//conditions:default": __ONNXRUNTIME_WITHOUT_CUDA
