@@ -1,0 +1,16 @@
+# Keep the build context small and free of host-side Bazel artifacts.
+.git
+bazel-*
+external-*
+dist
+test/resources/models.tar.gz
+# NOTE: test/resources/cgroup is a TRACKED test fixture (system_metrics_test.cpp
+# reads it via ROOT_DIR) — never exclude it.
+api_tests/node_modules
+api_tests/artifacts
+api_tests/tmp
+api_tests/hf_cache
+*.tar.gz
+*.md5.txt
+**/Dockerfile*
+docker/*.sh
