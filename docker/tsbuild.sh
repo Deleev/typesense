@@ -19,14 +19,14 @@
 #    breaks this script with confusing permission errors; clean it up once:
 #      sudo rm -rf bazel-bin bazel-out bazel-testlogs bazel-typesense \
 #                  external-* ~/.cache/typesense-bazel
-#  - dist vs dist-fast: dist is the hermetic release path (BuildKit cache
-#    mount inside the builder stage — a full ~40-dep rebuild if that store is
-#    cold, even after a host-cache `server` build). dist-fast stages
-#    ./bazel-bin/typesense-server into a temp context and builds the
-#    runtime-prebuilt stage, reusing the host-cache incremental build — the
-#    dev/iteration path. NEITHER runs the test suite (the Dockerfile `test`
-#    stage is never built by them); run `docker/tsbuild.sh test` separately,
-#    or rely on CI.
+#  - dist vs dist-fast : dist est le chemin de release hermétique — les ~40
+#    dépendances sont compilées par le stage `deps` et viennent de la couche
+#    d'image figée à /bazel-cache (le bind mount $CACHE_DIR:/bazel-cache ne
+#    fait qu'y superposer l'état local, il n'en est pas la source). Si cette
+#    couche manque, tout est recompilé à froid, même après un `server` sur
+#    cache hôte. dist-fast stage ./bazel-bin/typesense-server dans un contexte
+#    temporaire et construit le stage runtime-prebuilt (build incrémental du
+#    cache hôte) — chemin dev. AUCUN des deux ne lance les tests : voir `test`/CI.
 #  - Runtime data-dir ownership: the image runs as uid 1000720000 (the
 #    predecessor docker/deployment.Dockerfile ran as root). An existing
 #    root-owned --data-dir volume fails at startup ("Data directory ... does
@@ -36,9 +36,9 @@
 #    emulation on amd64 hosts — slow and flaky for the heavily-threaded
 #    autotools/cmake foreign builds (down-tuned to --jobs=2 below). Prefer
 #    building arm64 natively on an arm64 runner with a separate
-#    `--platform linux/arm64` invocation. The shared BuildKit cache-mount id
-#    across platforms also causes concurrent-Bazel lock contention on one
-#    output root, so run platform builds sequentially.
+#    `--platform linux/arm64`. Ce n'est pas un cache mount BuildKit partagé qui
+#    coince (les deps viennent de la couche image à /bazel-cache) mais la
+#    contention du verrou Bazel sur un même output root : builds séquentiels.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
